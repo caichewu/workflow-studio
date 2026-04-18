@@ -51,27 +51,28 @@ function pruneUnconnectedConditionNodes(state: PersistedState): PersistedState {
 }
 
 const initialAgents: Agent[] = [
-  { id: 'agent-docs', name: '文档助手', description: '负责知识库检索、文档整理和摘要生成', coreFiles: ['src/docs/index.ts', 'src/docs/parser.ts'], model: 'gpt-4', dataConnection: '/data/docs', skills: ['文本处理', '摘要生成', '知识检索'], createdAt: now, updatedAt: now },
+  { id: 'agent-docs', name: '文案助手', description: '负责文案撰写、标题生成和内容优化', coreFiles: ['src/docs/index.ts', 'src/docs/parser.ts'], model: 'gpt-4', dataConnection: '/data/docs', skills: ['文案撰写', '标题生成', '内容优化'], createdAt: now, updatedAt: now },
+  { id: 'agent-data', name: '数据分析助手', description: '负责热点分析、数据清洗和趋势预测', coreFiles: ['src/analytics/index.ts', 'src/analytics/chart.ts'], model: 'gpt-4', dataConnection: '/data/warehouse', skills: ['热点分析', '数据清洗', '趋势预测'], createdAt: now, updatedAt: now },
   { id: 'agent-code', name: '代码助手', description: '负责代码生成、重构和测试建议', coreFiles: ['src/codegen/index.ts', 'src/codegen/templates.ts'], model: 'claude-3', dataConnection: '/data/code', skills: ['代码生成', '重构建议', '单元测试'], createdAt: now, updatedAt: now },
-  { id: 'agent-data', name: '数据分析助手', description: '负责数据清洗、分析和可视化建议', coreFiles: ['src/analytics/index.ts', 'src/analytics/chart.ts'], model: 'gpt-4', dataConnection: '/data/warehouse', skills: ['数据分析', '表格处理', '图表生成'], createdAt: now, updatedAt: now },
 ];
 
+// 小红书爆款文案生成工作流
 const initialNodes: Node<WorkflowNodeData>[] = [
-  { id: '1', type: 'start', position: { x: 120, y: 180 }, data: { title: '开始', description: '工作流起点' } },
-  { id: '2', type: 'agent', position: { x: 360, y: 160 }, data: { title: 'AI代理', description: '选择预定义 Agent 执行任务', agentId: 'agent-docs', overrideModel: MODEL_OVERRIDE_DEFAULT, extraOutputs: ['out'] } },
-  { id: '3', type: 'condition', position: { x: 620, y: 160 }, data: { title: '条件判断', description: '检查输出结果', condition: 'result.success === true' } },
-  { id: '4', type: 'api', position: { x: 900, y: 70 }, data: { title: 'API调用', description: '调用外部 HTTP 接口', method: 'GET', url: 'https://api.example.com/data', extraOutputs: ['out'] } },
-  { id: '5', type: 'code', position: { x: 900, y: 260 }, data: { title: '代码执行', description: '执行脚本或转换逻辑', code: 'return input.map(item => item.id)', extraOutputs: ['out'] } },
-  { id: '6', type: 'end', position: { x: 1160, y: 170 }, data: { title: '结束', description: '工作流结束', extraOutputs: [] } },
+  { id: '1', type: 'start', position: { x: 120, y: 180 }, data: { title: '开始', description: '输入选题方向' } },
+  { id: '2', type: 'agent', position: { x: 360, y: 120 }, data: { title: '选题分析', description: 'AI分析热门话题，推荐3个选题', agentId: 'agent-data', overrideModel: MODEL_OVERRIDE_DEFAULT } },
+  { id: '3', type: 'agent', position: { x: 600, y: 120 }, data: { title: '标题生成', description: '生成5个爆款标题', agentId: 'agent-docs', overrideModel: MODEL_OVERRIDE_DEFAULT } },
+  { id: '4', type: 'condition', position: { x: 840, y: 120 }, data: { title: '标题筛选', description: '选择最佳标题', condition: 'selected != null' } },
+  { id: '5', type: 'agent', position: { x: 1080, y: 120 }, data: { title: '正文撰写', description: '撰写300字小红书正文', agentId: 'agent-docs', overrideModel: MODEL_OVERRIDE_DEFAULT } },
+  { id: '6', type: 'end', position: { x: 1320, y: 180 }, data: { title: '结束', description: '文案生成完成' } },
 ];
 
 const dashedEdge = { style: { stroke: '#3b82f6', strokeWidth: 2.5 }, markerEnd: { type: 'arrowclosed' as const, color: '#3b82f6' } };
 const initialEdges: Edge[] = [
   { id: 'e1-2', source: '1', target: '2', animated: true, ...dashedEdge },
   { id: 'e2-3', source: '2', target: '3', animated: true, ...dashedEdge },
-  { id: 'e3-4', source: '3', target: '4', label: '通过', sourceHandle: 'yes', targetHandle: 'in', ...dashedEdge },
-  { id: 'e3-5', source: '3', target: '5', label: '不通过', sourceHandle: 'no', targetHandle: 'in', ...dashedEdge },
-  { id: 'e4-6', source: '4', target: '6', animated: true, ...dashedEdge },
+  { id: 'e3-4', source: '3', target: '4', animated: true, ...dashedEdge },
+  { id: 'e4-5', source: '4', target: '5', label: '通过', sourceHandle: 'yes', targetHandle: 'in', ...dashedEdge },
+  { id: 'e4-2', source: '4', target: '2', label: '重写', sourceHandle: 'no', targetHandle: 'in', ...dashedEdge },
   { id: 'e5-6', source: '5', target: '6', animated: true, ...dashedEdge },
 ];
 
