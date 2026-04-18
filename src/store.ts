@@ -56,13 +56,14 @@ const initialAgents: Agent[] = [
   { id: 'agent-code', name: '代码助手', description: '负责代码生成、重构和测试建议', coreFiles: ['src/codegen/index.ts', 'src/codegen/templates.ts'], model: 'claude-3', dataConnection: '/data/code', skills: ['代码生成', '重构建议', '单元测试'], createdAt: now, updatedAt: now },
 ];
 
-// 小红书爆款文案生成工作流
+// 小红书爆款文案生成工作流（含条件判断）
 const initialNodes: Node<WorkflowNodeData>[] = [
   { id: '1', type: 'start', position: { x: 100, y: 200 }, data: { title: '开始', description: '输入选题方向' } },
   { id: '2', type: 'agent', position: { x: 350, y: 100 }, data: { title: '选题分析', description: 'AI分析热门话题，推荐3个选题', agentId: 'agent-data', overrideModel: MODEL_OVERRIDE_DEFAULT } },
   { id: '3', type: 'agent', position: { x: 600, y: 100 }, data: { title: '标题生成', description: '生成5个爆款标题', agentId: 'agent-docs', overrideModel: MODEL_OVERRIDE_DEFAULT } },
-  { id: '4', type: 'agent', position: { x: 850, y: 100 }, data: { title: '正文撰写', description: '撰写300字小红书正文', agentId: 'agent-docs', overrideModel: MODEL_OVERRIDE_DEFAULT } },
-  { id: '5', type: 'end', position: { x: 1100, y: 200 }, data: { title: '结束', description: '文案生成完成' } },
+  { id: '4', type: 'condition', position: { x: 850, y: 100 }, data: { title: '标题筛选', description: '选择最佳标题', condition: 'selected != null' } },
+  { id: '5', type: 'agent', position: { x: 1100, y: 50 }, data: { title: '正文撰写', description: '撰写300字小红书正文', agentId: 'agent-docs', overrideModel: MODEL_OVERRIDE_DEFAULT } },
+  { id: '6', type: 'end', position: { x: 1350, y: 200 }, data: { title: '结束', description: '文案生成完成' } },
 ];
 
 const dashedEdge = { style: { stroke: '#3b82f6', strokeWidth: 2.5 }, markerEnd: { type: 'arrowclosed' as const, color: '#3b82f6' } };
@@ -71,6 +72,7 @@ const initialEdges: Edge[] = [
   { id: 'e2-3', source: '2', target: '3', animated: true, ...dashedEdge },
   { id: 'e3-4', source: '3', target: '4', animated: true, ...dashedEdge },
   { id: 'e4-5', source: '4', target: '5', animated: true, ...dashedEdge },
+  { id: 'e5-6', source: '5', target: '6', animated: true, ...dashedEdge },
 ];
 
 const fallbackState: PersistedState = { agents: initialAgents, nodes: initialNodes, edges: initialEdges };
